@@ -296,7 +296,6 @@ const emprestimos = [
 
 
 function fetchLivros() {
-    
     const tbody = $('#estoque tbody');
     estoqueLivros.forEach(l => {
         const tr = $('<tr>');
@@ -309,29 +308,26 @@ function fetchLivros() {
         tr.append(`
             <td>
             <div class="campo-btn">
-                <button class="btn btn-sm btn-info"
+                <button class="btn btn-sm btn-editar"
                         data-toggle="modal" data-target="#editarModal"
                         onclick="editar(${l.id})">
                         Editar
                 </button>              
-      
-                <button class="btn btn-sm btn-primary"
+                <button class="btn btn-sm btn-emprestar"
                         data-toggle="modal" data-target="#modalEmprestar"
                         onclick="emprestar(${l.id})">
                         Emprestar
                 </button>   
-                
-                
-                <button class="btn btn-sm btn-secondary"
+                <button class="btn btn-sm btn-apagar"
                         data-toggle="modal" data-target="#modalExcluir"
-                         onclick="excluir(${l.id})">
+                        onclick="excluir(${l.id})">
                         Apagar
                 </button>
             </div>
             </td>
-          `);
+        `);
         tbody.append(tr);
-    })
+    });
     $("#estoque").DataTable({
         language: {
             sEmptyTable: "Nenhum registro encontrado",
@@ -358,150 +354,134 @@ function fetchLivros() {
     });
 }
 
-
 function editar(id) {
     const livro = estoqueLivros.find(l => l.id === id);
-
     const body = document.getElementById('modalContentEdit');
-
     body.innerHTML = `
-          <!-- Modal Header -->
-          <div class="modal-header">
-            <p>Você está editando <span  class="title"> ${livro.titulo}</span></p>
-            <button type="button" class="close" data-dismiss="modal">
-              &times;
-            </button>
-          </div>
-
-          <!-- Modal body -->
-          <div class="modal-body">
-          
-
-
-        <form>
-            <div class="form-group">
-            <label for="tituloLivro">Título</label>
-            <input type="text" class="form-control" id="editarTitulo" value="${livro.titulo}">
-            </div>
-            <div class="form-group">
-                <label for="autorLivro">Autor</label>
-                <input type="text" class="form-control" id="editarAutor" value="${livro.escritor}">
-            </div>
-            <div class="form-group">
-                <label for="quantidadeLivro">Quantidade</label>
-                <input type="number" class="form-control" id="editarQuantidade" value="${livro.quantidade}">
-            </div>
-
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-            <button type="submit" onclick="salvarEdicao(${livro.id})" class="btn btn-primary">Salvar Alterações</button>
-            </div>
-        </form>
-    `
+        <div class="modal-header">
+            <p>Você está editando <span class="title">${livro.titulo}</span></p>
+            <button type="button" class="close" data-dismiss="modal">×</button>
+        </div>
+        <div class="modal-body">
+            <form>
+                <div class="form-group">
+                    <label for="editarTitulo">Título</label>
+                    <input type="text" class="form-control" id="editarTitulo" value="${livro.titulo}">
+                </div>
+                <div class="form-group">
+                    <label for="editarAutor">Autor</label>
+                    <input type="text" class="form-control" id="editarAutor" value="${livro.escritor}">
+                </div>
+                <div class="form-group">
+                    <label for="editarQuantidade">Quantidade</label>
+                    <input type="number" class="form-control" id="editarQuantidade" value="${livro.quantidade}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" onclick="salvarEdicao(${livro.id})" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    `;
 }
 
-
-
 function emprestar(id) {
-
     const livro = estoqueLivros.find(l => l.id === id);
-
     const body = document.getElementById('modalContentEmprestar');
     const hoje = new Date();
-
-    // Formata data e hora atual
     const dataAtual = hoje.toLocaleDateString("pt-BR");
     const horaAtual = hoje.toLocaleTimeString("pt-BR");
-
-    // Soma 90 dias
     const dataDevolucao = new Date();
     dataDevolucao.setDate(dataDevolucao.getDate() + 90);
     const dataDevolucaoFormatada = dataDevolucao.toLocaleDateString("pt-BR");
 
-
-
     body.innerHTML = `
-          <!-- Modal Header -->
-          <div class="modal-header">
-            <p><span  class="title"> ${livro.titulo}</span></p> <br>
-            <button type="button" class="close" data-dismiss="modal">
-            &times;
-            </button>
-            </div>
-            
+        <div class="modal-header">
+            <p><span class="title">${livro.titulo}</span></p>
+            <button type="button" class="close" data-dismiss="modal">×</button>
+        </div>
+        <div class="modal-body">
             <img src="https://covers.openlibrary.org/b/olid/${livro.capaUrl}-S.jpg" alt="Capa" style="width:100px; margin:0 auto;padding:8px;">
-          <!-- Modal body -->
-          <div class="modal-body">
-        <form>
-            <div class="form-group">
-                <label for="autorLivro">Autor</label>
-                <input type="text" class="form-control" disabled value="${livro.escritor}">
-            </div>
-            <div class="form-group">
-            <label for="sel1">Selecione usuário:</label>
-            <select class="form-control" id="sel1">
-            <option> - Selecione o usuário - </option>
-               ${usuarios.map(u => `<option value="${u.id}">${u.nome}</option>`).join("")};
-            </select>
-            </div>
-            <div class="form-group">
-                <label for="quantidadeLivro">Quantidade</label>
-                <input type="number" class="form-control" max="3" min="1">
-            </div>
-            <p>
-                Empréstimo em: <strong>${dataAtual}</strong> às <strong>${horaAtual}</strong>. 
-                Devolução até: <strong>${dataDevolucaoFormatada}</strong>.
-            </p>
-
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-            <button type="submit" onclick="salvarEdicao(${livro.id})" class="btn btn-primary">Emprestar</button>
-            </div>
-        </form>
-    `
+            <form>
+                <div class="form-group">
+                    <label for="autorLivro">Autor</label>
+                    <input type="text" class="form-control" disabled value="${livro.escritor}">
+                </div>
+                <div class="form-group">
+                    <label for="sel1">Selecione usuário:</label>
+                    <select class="form-control" id="sel1">
+                        <option> - Selecione o usuário - </option>
+                        ${usuarios.map(u => `<option value="${u.id}">${u.nome}</option>`).join("")}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quantidadeLivro">Quantidade</label>
+                    <input type="number" class="form-control" max="3" min="1">
+                </div>
+                <p>
+                    Empréstimo em: <strong>${dataAtual}</strong> às <strong>${horaAtual}</strong>. 
+                    Devolução até: <strong>${dataDevolucaoFormatada}</strong>.
+                </p>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" onclick="confirmarEmprestar(${livro.id})" class="btn btn-primary">Emprestar</button>
+                </div>
+            </form>
+        </div>
+    `;
 }
-
 
 function excluir(id) {
-
     const livro = estoqueLivros.find(l => l.id === id);
-
     const body = document.getElementById('modalContentExcluir');
-
     body.innerHTML = `
-          <!-- Modal Header -->
-          <div class="modal-header">
-            <p><span  class="title"> ${livro.titulo}</span></p>
-            <button type="button" class="close" data-dismiss="modal">
-              &times;
-            </button>
-          </div>
-
+        <div class="modal-header">
+            <p><span class="title">${livro.titulo}</span></p>
+            <button type="button" class="close" data-dismiss="modal">×</button>
+        </div>
+        <div class="modal-body">
             <img src="https://covers.openlibrary.org/b/olid/${livro.capaUrl}-S.jpg" alt="Capa" style="width:100px; margin:0 auto;padding:8px;">
-          <!-- Modal body -->
-          <div class="modal-body">
-        <form>
-            <div class="form-group">
-                <label for="autorLivro">Titulo</label>
-                <input type="text" class="form-control" disabled value="${livro.titulo}">
-            </div>
-               <div class="form-group">
-                <label for="autorLivro">Autor</label>
-                <input type="text" class="form-control" disabled id="editarAutor" value="${livro.escritor}">
-            </div>
-            <div class="form-group">
-                <label for="quantidadeLivro">Quantidade</label>
-                <input type="number" class="form-control" disabled id="editarQuantidade" value="${livro.quantidade}">
-            </div>
-
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-            <button type="submit" onclick="salvarEdicao(${livro.id})" class="btn btn-danger">Apagar livro</button>
-            </div>
-        </form>
-    `
+            <form>
+                <div class="form-group">
+                    <label for="autorLivro">Título</label>
+                    <input type="text" class="form-control" disabled value="${livro.titulo}">
+                </div>
+                <div class="form-group">
+                    <label for="autorLivro">Autor</label>
+                    <input type="text" class="form-control" disabled value="${livro.escritor}">
+                </div>
+                <div class="form-group">
+                    <label for="quantidadeLivro">Quantidade</label>
+                    <input type="number" class="form-control" disabled value="${livro.quantidade}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" onclick="confirmarExcluir(${livro.id})" class="btn btn-danger">Apagar livro</button>
+                </div>
+            </form>
+        </div>
+    `;
 }
 
+// Funções de confirmação (placeholder - a serem implementadas)
+function salvarEdicao(id) {
+    // Lógica para salvar edição
+    console.log(`Salvando edição do livro com ID ${id}`);
+    // Atualize o estoqueLivros aqui com os valores dos inputs
+    $('#editarModal').modal('hide');
+}
 
+function confirmarEmprestar(id) {
+    // Lógica para confirmar empréstimo
+    console.log(`Confirmando empréstimo do livro com ID ${id}`);
+    $('#modalEmprestar').modal('hide');
+}
+
+function confirmarExcluir(id) {
+    // Lógica para confirmar exclusão
+    console.log(`Confirmando exclusão do livro com ID ${id}`);
+    // Remova o livro do estoqueLivros se confirmado
+    $('#modalExcluir').modal('hide');
+}
 
 fetchLivros();
